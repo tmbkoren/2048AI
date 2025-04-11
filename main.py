@@ -26,8 +26,7 @@ def main():
                 else:
                     move = None
 
-                if move:
-                    board = apply_move(board, move)
+                board = apply_move(board, move)
 
 
         # Render the board.
