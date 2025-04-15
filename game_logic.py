@@ -1,5 +1,6 @@
 # game_logic.py
 import random
+import copy
 
 
 BOARD_SIZE = 4
@@ -33,6 +34,9 @@ def is_game_over(board: list[list[int]]) -> bool:
 
     return True  # No moves left
 
+def didAnythingMove(board1: list[list[int]], board2: list[list[int]]) -> bool:
+    '''Checks if the board has changed due to a move. Check before spawning new tile.'''
+    return not (board1 == board2)    # TRUE if the board has changed, FALSE if nothing moved
 
 def add_random_tile(board: list[list[int]]) -> list[list[int]]:
     '''Add a random tile (2 or 4) to a random empty space on the board.'''
@@ -44,6 +48,7 @@ def add_random_tile(board: list[list[int]]) -> list[list[int]]:
 
 
 def moveUp(board) -> list[list[int]]:
+    boardStart = copy.deepcopy(board)
     for j in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
         for i in range(1, BOARD_SIZE):
@@ -61,11 +66,13 @@ def moveUp(board) -> list[list[int]]:
                         break
                     else:
                         break
-    board = add_random_tile(board)
+    if didAnythingMove(boardStart, board):
+        board = add_random_tile(board)
     return board
 
 
 def moveDown(board) -> list[list[int]]:
+    boardStart = copy.deepcopy(board)
     for j in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
         for i in range(BOARD_SIZE - 2, -1, -1):
@@ -83,12 +90,14 @@ def moveDown(board) -> list[list[int]]:
                         break
                     else:
                         break
-    board = add_random_tile(board)
+    if didAnythingMove(boardStart, board):
+        board = add_random_tile(board)
     return board
 
 
 
 def moveLeft(board) -> list[list[int]]:
+    boardStart = copy.deepcopy(board)
     for i in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
         for j in range(1, BOARD_SIZE):
@@ -106,12 +115,14 @@ def moveLeft(board) -> list[list[int]]:
                         break
                     else:
                         break
-    board = add_random_tile(board)
+    if didAnythingMove(boardStart, board):
+        board = add_random_tile(board)
     return board
 
 
 
 def moveRight(board) -> list[list[int]]:
+    boardStart = copy.deepcopy(board)
     for i in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE  # Track merges in this row
         for j in range(BOARD_SIZE - 2, -1, -1):  # Start from second-to-last cell
@@ -130,5 +141,6 @@ def moveRight(board) -> list[list[int]]:
                         break
                     else:
                         break
-    board = add_random_tile(board)
+    if didAnythingMove(boardStart, board):
+        board = add_random_tile(board)
     return board
