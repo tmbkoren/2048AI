@@ -1,5 +1,5 @@
 import pygame
-from game_logic import create_board, apply_move
+from game_logic import create_board, moveUp, moveDown, moveLeft, moveRight
 from gui import draw_board
 
 
@@ -16,18 +16,13 @@ def main():
             elif not ai_control and event.type == pygame.KEYDOWN:
                 # Map arrow keys to moves
                 if event.key == pygame.K_UP:
-                    move = 0
+                    board = moveUp(board)
                 elif event.key == pygame.K_DOWN:
-                    move = 2
+                    board = moveDown(board)
                 elif event.key == pygame.K_LEFT:
-                    move = 3
+                    board = moveLeft(board)
                 elif event.key == pygame.K_RIGHT:
-                    move = 1
-                else:
-                    move = None
-
-                board = apply_move(board, move)
-
+                    board = moveRight(board)
 
         # Render the board.
         draw_board(pygame.display.get_surface(), board, font)
