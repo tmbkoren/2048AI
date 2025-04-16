@@ -1,7 +1,7 @@
 import pygame
 import json
 from game_logic import create_board, moveUp, moveDown, moveLeft, moveRight, is_game_over
-from gui import draw_board, draw_game_over_popup, draw_button, draw_ai_suggestion
+from gui import draw_board, draw_game_over_popup, draw_button, draw_ai_suggestion, draw_scores
 
 # === Placeholder AI function ===
 
@@ -112,13 +112,17 @@ def main():
                     game_over = True
 
             # Draw the game
+            
+
             draw_board(screen, board, gameFont)
             pygame.draw.line(screen, (180, 180, 180),
                             (0, SCREEN_SIZE), (SCREEN_SIZE, SCREEN_SIZE), 2)
-
+            draw_scores(screen, font, current_score, high_score)
+            
             draw_button(screen, "Suggest Move", SUGGEST_BUTTON, font)
             draw_button(screen, "AI Autoplay", AUTO_BUTTON,
                         font, active=ai_autoplay)
+
 
             # Display AI suggestion if recent
             if suggested_move:
