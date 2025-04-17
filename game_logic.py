@@ -47,7 +47,7 @@ def add_random_tile(board: list[list[int]]) -> list[list[int]]:
     return board
 
 
-def moveUp(board) -> list[list[int]]:
+def moveUp(board, score) -> list[list[int]]:
     boardStart = copy.deepcopy(board)
     for j in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
@@ -62,6 +62,7 @@ def moveUp(board) -> list[list[int]]:
                     elif board[k-1][j] == board[k][j] and not merged[k-1]:
                         board[k-1][j] *= 2
                         board[k][j] = 0
+                        score[0] += board[k-1][j]
                         merged[k-1] = True
                         break
                     else:
@@ -71,7 +72,7 @@ def moveUp(board) -> list[list[int]]:
     return board
 
 
-def moveDown(board) -> list[list[int]]:
+def moveDown(board, score) -> list[list[int]]:
     boardStart = copy.deepcopy(board)
     for j in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
@@ -86,6 +87,7 @@ def moveDown(board) -> list[list[int]]:
                     elif board[k+1][j] == board[k][j] and not merged[k+1]:
                         board[k+1][j] *= 2
                         board[k][j] = 0
+                        score[0] += board[k+1][j]
                         merged[k+1] = True
                         break
                     else:
@@ -96,7 +98,7 @@ def moveDown(board) -> list[list[int]]:
 
 
 
-def moveLeft(board) -> list[list[int]]:
+def moveLeft(board, score) -> list[list[int]]:
     boardStart = copy.deepcopy(board)
     for i in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE
@@ -111,6 +113,7 @@ def moveLeft(board) -> list[list[int]]:
                     elif board[i][k-1] == board[i][k] and not merged[k-1]:
                         board[i][k-1] *= 2
                         board[i][k] = 0
+                        score[0] += board[i][k-1]
                         merged[k-1] = True
                         break
                     else:
@@ -121,7 +124,7 @@ def moveLeft(board) -> list[list[int]]:
 
 
 
-def moveRight(board) -> list[list[int]]:
+def moveRight(board, score) -> list[list[int]]:
     boardStart = copy.deepcopy(board)
     for i in range(BOARD_SIZE):
         merged = [False] * BOARD_SIZE  # Track merges in this row
@@ -136,6 +139,7 @@ def moveRight(board) -> list[list[int]]:
                     elif board[i][k+1] == board[i][k] and not merged[k+1]:
                         board[i][k+1] *= 2
                         board[i][k] = 0
+                        score[0] += board[i][k+1]
                         # Mark as merged so it doesn't merge again
                         merged[k+1] = True
                         break

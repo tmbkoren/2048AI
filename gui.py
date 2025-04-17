@@ -48,7 +48,11 @@ def draw_ai_suggestion(screen, font, move_name):
         f"AI Suggests: {move_name.upper()}", True, (80, 80, 80))
     screen.blit(label, (100, 470))  # move below the buttons
 
-
+def draw_scores(screen, font, score, high_score):
+    score_text = font.render(f"Score: {score[0]}", True, (0, 0, 0))
+    high_text = font.render(f"High: {high_score}", True, (0, 0, 0))
+    screen.blit(score_text, (10, 10))
+    screen.blit(high_text, (220, 10))
 
 def get_tile_color(value):
     return {
