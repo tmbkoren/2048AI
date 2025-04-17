@@ -2,11 +2,14 @@ import pygame
 import json
 from game_logic import create_board, moveUp, moveDown, moveLeft, moveRight, is_game_over
 from gui import draw_board, draw_game_over_popup, draw_button, draw_ai_suggestion, draw_scores
+from ai import mcts_best_move
 
 # === Placeholder AI function ===
 
 def get_best_move(board):
-    return "up"  # Replace with real AI logic
+    move = mcts_best_move(board)
+    print(f"AI suggests: {move}")
+    return move
 
 
 # === Setup ===
