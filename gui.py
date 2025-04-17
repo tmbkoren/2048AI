@@ -1,11 +1,10 @@
-import pygame
-
 # Constants
 SCREEN_SIZE = 400
 BOARD_SIZE = 4
 
 
 def draw_board(screen, board, font):
+    import pygame
     tile_size = SCREEN_SIZE // BOARD_SIZE
     for i in range(BOARD_SIZE):
         for j in range(BOARD_SIZE):
@@ -21,6 +20,7 @@ def draw_board(screen, board, font):
 
 
 def draw_game_over_popup(screen, font):
+    import pygame
     overlay = pygame.Surface((SCREEN_SIZE, SCREEN_SIZE))
     overlay.set_alpha(180)
     overlay.fill((0, 0, 0))
@@ -36,6 +36,7 @@ def draw_game_over_popup(screen, font):
 
 
 def draw_button(screen, text, rect, font, active=False):
+    import pygame
     color = (120, 180, 120) if active else (200, 200, 200)
     pygame.draw.rect(screen, color, rect, border_radius=8)
     label = font.render(text, True, (0, 0, 0))
@@ -46,13 +47,15 @@ def draw_button(screen, text, rect, font, active=False):
 def draw_ai_suggestion(screen, font, move_name):
     label = font.render(
         f"AI Suggests: {move_name.upper()}", True, (80, 80, 80))
-    screen.blit(label, (100, 470))  # move below the buttons
+    screen.blit(label, (100, 470))
+
 
 def draw_scores(screen, font, score, high_score):
     score_text = font.render(f"Score: {score[0]}", True, (0, 0, 0))
     high_text = font.render(f"High: {high_score}", True, (0, 0, 0))
     screen.blit(score_text, (10, 10))
     screen.blit(high_text, (220, 10))
+
 
 def get_tile_color(value):
     return {

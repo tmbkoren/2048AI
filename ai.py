@@ -1,37 +1,46 @@
 import copy
 import random
 import time
+from concurrent.futures import ProcessPoolExecutor
 
 BOARD_SIZE = 4
-SIMULATION_TIME = 1.5  # Seconds to run MCTS per decision
+SIMULATIONS_PER_MOVE = 30
 
 
 def move_left(board):
     new_board = copy.deepcopy(board)
     moved = False
+    score_gained = 0
+
     for i in range(BOARD_SIZE):
-        row = [v for v in new_board[i] if v != 0]
-        j = 0
-        while j < len(row) - 1:
-            if row[j] == row[j + 1]:
-                row[j] *= 2
-                row[j + 1] = 0
-                j += 2
-                moved = True
-            else:
-                j += 1
-        row = [v for v in row if v != 0]
-        row += [0] * (BOARD_SIZE - len(row))
-        if new_board[i] != row:
-            moved = True
-        new_board[i] = row
-    return new_board, moved
+        merged = [False] * BOARD_SIZE
+        for j in range(1, BOARD_SIZE):
+            if new_board[i][j] == 0:
+                continue
+            k = j
+            while k > 0:
+                if new_board[i][k - 1] == 0:
+                    new_board[i][k - 1] = new_board[i][k]
+                    new_board[i][k] = 0
+                    k -= 1
+                    moved = True
+                elif new_board[i][k - 1] == new_board[i][k] and not merged[k - 1]:
+                    new_board[i][k - 1] *= 2
+                    new_board[i][k] = 0
+                    merged[k - 1] = True
+                    score_gained += new_board[i][k - 1]
+                    moved = True
+                    break
+                else:
+                    break
+
+    return new_board, moved, score_gained
 
 
 def move_right(board):
     reversed_board = [row[::-1] for row in board]
-    moved_board, moved = move_left(reversed_board)
-    return [row[::-1] for row in moved_board], moved
+    moved_board, moved, score = move_left(reversed_board)
+    return [row[::-1] for row in moved_board], moved, score
 
 
 def transpose(board):
@@ -40,14 +49,14 @@ def transpose(board):
 
 def move_up(board):
     transposed = transpose(board)
-    moved_board, moved = move_left(transposed)
-    return transpose(moved_board), moved
+    moved_board, moved, score = move_left(transposed)
+    return transpose(moved_board), moved, score
 
 
 def move_down(board):
     transposed = transpose(board)
-    moved_board, moved = move_right(transposed)
-    return transpose(moved_board), moved
+    moved_board, moved, score = move_right(transposed)
+    return transpose(moved_board), moved, score
 
 
 def add_random_tile(board):
@@ -61,7 +70,7 @@ def add_random_tile(board):
 
 def is_game_over(board):
     for move_func in [move_up, move_down, move_left, move_right]:
-        _, moved = move_func(board)
+        _, moved, _ = move_func(board)
         if moved:
             return False
     return True
@@ -73,18 +82,19 @@ def random_playout(board):
     while not is_game_over(b):
         moves = []
         for name, func in [('up', move_up), ('down', move_down), ('left', move_left), ('right', move_right)]:
-            new_b, moved = func(b)
+            new_b, moved, _ = func(b)
             if moved:
                 moves.append((new_b, name))
         if not moves:
             break
         b, _ = random.choice(moves)
         add_random_tile(b)
-        score += sum(sum(row) for row in b)  # Can adjust metric here
+        score += sum(sum(row) for row in b)
     return score
 
 
-def mcts_best_move(board):
+def simulate_move(args):
+    board, move_name, num_simulations = args
     move_funcs = {
         'up': move_up,
         'down': move_down,
@@ -92,33 +102,39 @@ def mcts_best_move(board):
         'right': move_right
     }
 
-    results = {move: [] for move in move_funcs}
-    start_time = time.time()
+    func = move_funcs[move_name]
+    scores = []
 
-    while time.time() - start_time < SIMULATION_TIME:
-        for move_name, func in move_funcs.items():
-            board_copy = copy.deepcopy(board)
-            new_board, moved = func(board_copy)
-            if not moved:
-                continue
-            add_random_tile(new_board)
-            score = random_playout(new_board)
-            results[move_name].append(score)
+    for _ in range(num_simulations):
+        b = copy.deepcopy(board)
+        b, moved, _ = func(b)
+        if not moved:
+            continue
+        add_random_tile(b)
+        score = random_playout(b)
+        scores.append(score)
 
-    # Choose move with highest average score
-    best_move = None
-    best_score = -float('inf')
-    for move, scores in results.items():
+    return move_name, scores
+
+
+def mcts_best_move(board):
+    move_names = ['up', 'down', 'left', 'right']
+
+    with ProcessPoolExecutor() as executor:
+        args = [(board, move, SIMULATIONS_PER_MOVE) for move in move_names]
+        futures = executor.map(simulate_move, args)
+
+    results = {}
+    for move_name, scores in futures:
         if scores:
-            avg_score = sum(scores) / len(scores)
-            if avg_score > best_score:
-                best_score = avg_score
-                best_move = move
+            avg = sum(scores) / len(scores)
+            results[move_name] = avg
 
-    return best_move or 'up'  # Fallback if no move possible
+    best_move = max(results, key=results.get, default='up')
+    return best_move
 
 
-# Example usage:
+# Example usage
 if __name__ == '__main__':
     board = [
         [0, 2, 0, 2],
