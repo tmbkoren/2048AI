@@ -1,11 +1,13 @@
 from gui import draw_board, draw_game_over_popup, draw_button, draw_ai_suggestion, draw_scores
 from game_logic import create_board, moveUp, moveDown, moveLeft, moveRight, is_game_over
 from ai import mcts_best_move
+import time
+import numpy as np
 
 
 def get_best_move(board):
     move = mcts_best_move(board)
-    print(f"AI suggests: {move}")
+    # print(f"AI suggests: {move}")
     return move
 
 
@@ -20,10 +22,27 @@ def apply_move(board, move: str, score):
         return moveRight(board, score)
     return board
 
+def printMetrics(trial_number, start_time, end_time, move_count, score, board):
+    win = (np.max(board) > 2048)
+    if win:
+        outcome = "Win"
+    else:
+        outcome = "Loss"
+    
+    time_elapsed = end_time - start_time
+    print(f'\nTrial Number: {trial_number}')
+    print(f'Time Elapsed: {time_elapsed}')
+    print(f'Move Count: {move_count}')
+    print(f'Final Score: {score}')
+    print(f'Outcome: {outcome}\n')
+    print('<><><><><><><><><><><><><><><><><>')
 
 def main():
     import pygame
     import json
+    
+    # MAKE SURE TO MAKE THIS FALSE FOR MANUAL DEMO
+    automated = True
 
     SCREEN_SIZE = 400
     SUGGEST_BUTTON = pygame.Rect(40, 420, 140, 40)
@@ -39,10 +58,17 @@ def main():
     # === Game Initialization ===
     board = create_board()
     game_over = False
-    ai_autoplay = False
+    if automated:
+        ai_autoplay = True
+    else:
+        ai_autoplay = False
     suggested_move = None
     suggest_display_timer = 0
     current_score = [0]
+    
+    move_count = 0
+    trial_number = 0
+    start_time = time.time()
 
     with open('scores.json', 'r') as file:
         data = json.load(file)
@@ -56,6 +82,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+            # MANUAL CONTROLS
             elif event.type == pygame.KEYDOWN:
                 if game_over and event.key == pygame.K_r:
                     board = create_board()
@@ -86,6 +113,7 @@ def main():
                                 json.dump(data, file, indent=4)
                             game_over = True
 
+            # MOUSE EVENT
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if SUGGEST_BUTTON.collidepoint(event.pos) and not game_over:
                     suggested_move = get_best_move(board)
@@ -98,6 +126,7 @@ def main():
         if ai_autoplay and not game_over:
             move = get_best_move(board)
             board = apply_move(board, move, current_score)
+            move_count += 1
             suggested_move = None
             pygame.time.delay(100)
 
@@ -128,6 +157,18 @@ def main():
 
         if game_over:
             draw_game_over_popup(screen, font)
+            
+            end_time = time.time()
+            printMetrics(trial_number, start_time, end_time, move_count, current_score[0], board)
+            trial_number += 1
+            if automated:
+                board = create_board()
+                game_over = False
+                ai_autoplay = True
+                suggested_move = None
+                current_score[0] = 0
+                move_count = 0
+                start_time = time.time()
 
         pygame.display.flip()
         clock.tick(30)
