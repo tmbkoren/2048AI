@@ -22,9 +22,9 @@ def apply_move(board, move: str, score):
         return moveRight(board, score)
     return board
 
-def printMetrics(trial_number, start_time, end_time, move_count, score, board):
-    win = (np.max(board) > 2048)
-    if win:
+def printMetrics(trial_number, start_time, end_time, move_count, score, board, win_count):
+    loss_count = trial_number - win_count
+    if (np.max(board) > 2048):
         outcome = "Win"
     else:
         outcome = "Loss"
@@ -35,6 +35,10 @@ def printMetrics(trial_number, start_time, end_time, move_count, score, board):
     print(f'Move Count: {move_count}')
     print(f'Final Score: {score}')
     print(f'Outcome: {outcome}\n')
+    
+    print('Session Statistics:')
+    print(f'Total Wins: {win_count}')
+    print(f'Total Losses: {loss_count}')
     print('<><><><><><><><><><><><><><><><><>')
 
 def main():
@@ -66,8 +70,9 @@ def main():
     suggest_display_timer = 0
     current_score = [0]
     
+    win_count = 0   # compare this with trial number for 
     move_count = 0
-    trial_number = 0
+    trial_number = 1
     start_time = time.time()
 
     with open('scores.json', 'r') as file:
@@ -159,7 +164,9 @@ def main():
             draw_game_over_popup(screen, font)
             
             end_time = time.time()
-            printMetrics(trial_number, start_time, end_time, move_count, current_score[0], board)
+            if (np.max(board) >= 2048):
+                win_count += 1
+            printMetrics(trial_number, start_time, end_time, move_count, current_score[0], board, win_count)
             trial_number += 1
             if automated:
                 board = create_board()
