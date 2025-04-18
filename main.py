@@ -24,7 +24,7 @@ def apply_move(board, move: str, score):
 
 def printMetrics(trial_number, start_time, end_time, move_count, score, board, win_count):
     loss_count = trial_number - win_count
-    if (np.max(board) > 2048):
+    if (np.max(board) >= 2048):
         outcome = "Win"
     else:
         outcome = "Loss"
